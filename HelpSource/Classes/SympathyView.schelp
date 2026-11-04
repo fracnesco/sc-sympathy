@@ -1,0 +1,22 @@
+TITLE:: SympathyView
+summary:: Sympathy's display
+categories:: Libraries>Sympathy
+related:: Classes/Sympathy, Classes/FxParamView, Classes/FxParamPanel
+
+DESCRIPTION::
+What link::Classes/FxParamPanel:: puts at the top of Sympathy's window. In it, drag a voice along the keyboard for its note, up and down for its level (shift for quarter tones and finer); the wheel moves the root and everything with it.
+
+It draws from the object's settings and the replies its meters bring, so it is only live while the window is running; link::Classes/FxParamView:: has the rest.
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: unit
+The link::Classes/Sympathy::.
+ARGUMENT:: parent
+A view to go in.
+
+INSTANCEMETHODS::
+
+METHOD:: hint
+What the hint bar says over it.

@@ -1,0 +1,90 @@
+TITLE:: Sympathy
+summary:: a bank of six tuned resonators that ring in a chord when the sound touches them, as a UGen and as an object, with a window
+categories:: Libraries>Sympathy
+related:: Classes/FxParamUnit, Classes/SympathyView, Classes/FxUnit, Classes/FxChain
+
+DESCRIPTION::
+Six tuned voices that ring when the sound touches them - hold a piano's pedal down and shout into it - running anywhere a UGen does, with a window.
+
+code::
+Ndef(\drums, { Sympathy.ar(Decay2.ar(Impulse.ar(2), 0.002, 0.05) * PinkNoise.ar(0.6 ! 2), \sympathy) }).play;
+
+y = Sympathy(Ndef(\drums), \sympathy);
+y.gui;
+y.root = 48; y.chord = \min9;
+y.decay = 6; y.bright = 0.7;
+y.tune(1, 7, 0.8);                // the second voice a fifth above the root, at 80%
+y.preset = 'gamelan';
+::
+
+Each voice is six resonators tuned to the harmonics of a note: code::inharm:: stretches them as a stiff string's are, and the high ones ring for less time as code::bright:: comes down. What comes in sets them going, and they answer in the chord.
+
+A voice is a distance from code::root:: in semitones, code::note1..6::, and a level, code::level1..6::, which has no knob: drag it on the keyboard, or use code::tune::. code::chord:: sets all six at once, from the names in code::Sympathy.chordNames::, and is a command rather than a setting, so a preset holds the notes it made.
+
+Their level follows the input, so a long decay on a steady input gets loud, and they are limited softly on the way out. Measured on one hit of noise, code::decay:: is the time to about 60 dB down.
+
+It is 72 code::Ringz:: at stereo, and about 3% of one core on an M4 Pro.
+
+subsection:: The object and the UGen
+It is an link::Classes/FxParamUnit::, so everything that class documents works here: code::Sympathy.ar(in, name)::, code::Sympathy(node, name)::, code::Sympathy.onBus(bus, numChannels)::, presets, the clipboard, code::gui::. Its window's display is a link::Classes/SympathyView::.
+
+subsection:: Parameters
+Each is a property of the object: read it, set it. The numbers are in the order of the node's control, which is what saved node maps carry. Internal ones without a knob, if any, are described above.
+
+table::
+## strong::parameter:: || strong::range:: || strong::default:: || strong::what it does::
+## code::root:: || 24 .. 84 midi || 48 || the note everything is counted from
+## code::note1:: || -24 .. 36 st || 0 || voice 1, in semitones from the root
+## code::note2:: || -24 .. 36 st || 7 || voice 2, in semitones from the root
+## code::note3:: || -24 .. 36 st || 12 || voice 3, in semitones from the root
+## code::note4:: || -24 .. 36 st || 19 || voice 4, in semitones from the root
+## code::note5:: || -24 .. 36 st || 24 || voice 5, in semitones from the root
+## code::note6:: || -24 .. 36 st || 31 || voice 6, in semitones from the root
+## code::glide:: || 0 .. 1 s || 0.05 || how long a voice takes to reach a new note
+## code::decay:: || 0.05 .. 30 s || 3 || how long the lowest harmonic rings
+## code::bright:: || 0 .. 1 || 0.5 || how long the high harmonics ring, against the low ones
+## code::inharm:: || 0 .. 0.02 || 0 || the harmonics stretched sharp, as on a stiff string
+## code::detune:: || 0 .. 50 c || 4 || the sides apart, in cents: slow beating
+## code::vibrato:: || 0 .. 1 || 0 || how far each voice wanders, at most a semitone
+## code::vibratoRate:: || 0.05 .. 12 Hz || 3 || how quickly
+## code::hiCut:: || 200 .. 20000 Hz || 12000 || a low pass on what goes in
+## code::loCut:: || 20 .. 2000 Hz || 40 || a high pass on what goes in
+## code::input:: || -24 .. 24 dB || 0 || how hard it is played
+## code::width:: || 0 .. 2 || 1 || how far apart the sides are
+## code::mix:: || 0 .. 1 || 0.6 || how much of the effect goes out, against the dry signal
+## code::output:: || -36 .. 24 dB || 0 || the level of the whole thing, in dB
+::
+
+CLASSMETHODS::
+
+METHOD:: chordNames
+the chords by name.
+
+METHOD:: chords
+the chords, as semitones from the root.
+
+INSTANCEMETHODS::
+
+METHOD:: chord
+six voices at once, by name: a setter only.
+
+METHOD:: tune
+one voice, from 0, either or both.
+ARGUMENT:: voice
+ARGUMENT:: semitones
+ARGUMENT:: level
+
+METHOD:: voiceNote
+what a voice sounds at, in midi.
+ARGUMENT:: i
+
+EXAMPLES::
+
+code::
+s.boot;
+Ndef(\drums, { Sympathy.ar(Decay2.ar(Impulse.ar(2), 0.002, 0.05) * PinkNoise.ar(0.6 ! 2), \sympathy) }).play;
+y = Sympathy(Ndef(\drums), \sympathy);
+y.gui;
+y.preset = Sympathy.presetNames.choose;
+y.free; Ndef(\drums).clear;
+::
