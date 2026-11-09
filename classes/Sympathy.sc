@@ -50,6 +50,9 @@ Sympathy : FxParamUnit {
 	}
 	*chordNames { ^#[\octaves, \fifth, \major, \minor, \sus, \min7, \maj7, \min9, \whole, \cluster, \quartal] }
 
+	// what a Tidal pattern may move through SuperDirtGUI, event by event
+	*tidalParams { ^#[\root, \note1, \note2, \note3, \note4, \note5, \note6, \decay, \bright, \inharm, \detune, \vibrato, \vibratoRate, \hiCut, \loCut, \mix] }
+
 	*params {
 		^[
 			this.knob(\root, 24, 84, \lin, 48, "midi", "root",
