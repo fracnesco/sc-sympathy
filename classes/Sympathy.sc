@@ -25,7 +25,12 @@ Sympathy : FxParamUnit {
 	*controlName { ^\sympathy }
 	*hasTail { ^true }
 	*displayClass { ^SympathyView }
-	*windowSize { ^Point(860, 480) }
+	*windowSize { ^Point(1000, 580) }
+
+	// the device window (sc-fx-ui): the frame of the family, a resonator's face
+	*guiClass { ^FxDeviceGUI }
+	*panelClass { ^SympathyPanel }
+	*identityColour { ^FxPalette.identity(\resonator) }
 
 	// a voice's distance from the root, in semitones, and whether it sounds
 	*chords {
@@ -47,30 +52,73 @@ Sympathy : FxParamUnit {
 
 	*params {
 		^[
-			this.knob(\root, 24, 84, \lin, 48, "midi", "root", "the note everything is counted from", lag: 0.02, section: \tuning, dec: 1),
+			this.knob(\root, 24, 84, \lin, 48, "midi", "root",
+				"the note every string is counted from - type a name (e3) or a number",
+				box: \note, lag: 0.02, section: \tuning, dec: 1, size: \big),
 			6.collect { |i|
 				var k = i + 1;
 				[
-					this.knob(("note" ++ k).asSymbol, -24, 36, \lin, #[0, 7, 12, 19, 24, 31][i], "st", "note " ++ k,
-						"voice %, in semitones from the root".format(k), lag: 0.02, section: \tuning, dec: 1),
-					this.knob(("level" ++ k).asSymbol, 0, 1, \lin, 1, "", "level " ++ k,
-						"voice %'s level".format(k), box: \pct, section: nil)
+					this.knob(("note" ++ k).asSymbol, -24, 36, \lin, #[0, 7, 12, 19, 24, 31][i], "st", "interval",
+						"string %, in semitones from the root".format(k), lag: 0.02, section: ("string " ++ k).asSymbol, dec: 1),
+					this.knob(("level" ++ k).asSymbol, 0, 1, \lin, 1, "", "level",
+						"how loud string % rings - at 0 it is off".format(k), box: \pct, section: nil, floorText: "off")
 				]
 			},
-			this.knob(\glide, 0, 1, \lin, 0.05, "s", "glide", "how long a voice takes to reach a new note", lag: 0, section: \tuning, dec: 2),
+			this.knob(\glide, 0, 1, \lin, 0.05, "s", "glide", "how long a string takes to reach a new note",
+				lag: 0, section: \tuning, dec: 2, size: \small),
 
-			this.knob(\decay, 0.05, 30, \exp, 3, "s", "decay", "how long the lowest harmonic rings", section: \string),
-			this.knob(\bright, 0, 1, \lin, 0.5, "", "bright", "how long the high harmonics ring, against the low ones", box: \pct, section: \string),
-			this.knob(\inharm, 0, 0.02, \lin, 0, "", "inharm", "the harmonics stretched sharp, as on a stiff string", section: \string, dec: 4),
-			this.knob(\detune, 0, 50, \lin, 4, "c", "detune", "the sides apart, in cents: slow beating", section: \string, dec: 1),
-			this.knob(\vibrato, 0, 1, \lin, 0, "", "vibrato", "how far each voice wanders, at most a semitone", box: \pct, section: \string),
-			this.knob(\vibratoRate, 0.05, 12, \exp, 3, "Hz", "rate", "how quickly", section: \string),
-			this.knob(\hiCut, 200, 20000, \exp, 12000, "Hz", "excite hi", "a low pass on what goes in", section: \string, dec: 0),
-			this.knob(\loCut, 20, 2000, \exp, 40, "Hz", "excite lo", "a high pass on what goes in", section: \string, dec: 0),
-			this.knob(\input, -24, 24, \lin, 0, "dB", "input", "how hard it is played", section: \string, dec: 1),
-			this.knob(\width, 0, 2, \lin, 1, "", "width", "how far apart the sides are", box: \pct, section: \string),
-			this.mixParams(\string, 0.6)
+			this.knob(\decay, 0.05, 30, \exp, 3, "s", "decay", "how long the lowest harmonic rings, to -60 dB",
+				section: \ring, size: \big),
+			this.knob(\bright, 0, 1, \lin, 0.5, "", "bright",
+				"how long the high harmonics ring against the low ones: dark, they die first",
+				box: \pct, section: \ring, size: \big),
+			this.knob(\inharm, 0, 0.02, \lin, 0, "", "stiffness",
+				"the harmonics stretched sharp, as on a stiff string: at 1 % the 6th is nearly a minor third sharp",
+				box: \pct, section: \ring, dec: 2, floorText: "off")
+				.put(\menuItems, [["piano", 0.0012], ["bell", 0.012], ["metal", 0.02]]),
+			this.knob(\detune, 0, 50, \lin, 4, "c", "detune", "the sides apart, in cents: slow beating",
+				section: \wobble, dec: 1),
+			this.knob(\vibrato, 0, 1, \lin, 0, "", "wander",
+				"how far each string drifts off its note, slowly and at random: at most a semitone",
+				box: \pct, section: \wobble, floorText: "off"),
+			this.knob(\vibratoRate, 0.05, 12, \exp, 3, "Hz", "rate", "how quickly the strings wander",
+				section: \wobble),
+			this.knob(\hiCut, 200, 20000, \exp, 12000, "Hz", "hi cut",
+				"a low pass on what goes in: what is above it does not reach the strings", section: \excite, dec: 0),
+			this.knob(\loCut, 20, 2000, \exp, 40, "Hz", "lo cut",
+				"a high pass on what goes in: what is below it does not reach the strings", section: \excite, dec: 0),
+			this.knob(\input, -24, 24, \lin, 0, "dB", "input", "how hard the strings are played", section: \excite, dec: 1),
+			this.knob(\width, 0, 2, \lin, 1, "", "width", "how far apart the sides are", box: \pct, section: \output),
+			this.mixParams(\output, 0.6)
 		]
+	}
+
+	// the window's pages (FxDevicePanel): the strings first, then what plays them and how they move
+	*devicePages {
+		^[
+			\strings -> [
+				(title: "tuning", keys: [
+					(choice: "chord", items: this.chordNames.collect(_.asString), prompt: "chord...",
+						action: { |unit, item| unit.chord = item.asSymbol },
+						hint: "tunes the six strings to a chord on the root, every one at full level"),
+					\root, \glide
+				]),
+				(title: "string", count: voices, colour: \identity,
+					keys: { |i| [this.note(i), this.level(i)] }),
+				(title: "ring", keys: [\decay, \bright, \inharm], colour: \identity)
+			],
+			\character -> [
+				(title: "excite", keys: [\input, \loCut, \hiCut]),
+				\wobble
+			]
+		]
+	}
+
+	*isActive { |key, unit|
+		var k = key.asString;
+		if (key == \vibratoRate) { ^unit.get(\vibrato) > 0 };
+		if ("^note[1-6]$".matchRegexp(k)) { ^unit.get(("level" ++ k.last).asSymbol) > 0 };
+		^true
 	}
 
 	*note { |i| ^("note" ++ (i + 1)).asSymbol }
@@ -120,22 +168,18 @@ Sympathy : FxParamUnit {
 	// what a voice sounds at, in midi
 	voiceNote { |i| ^values[\root] + values[this.class.note(i)] }
 
-	*panelExtras { |panel|
-		var menu = PopUpMenu().fixedWidth_(86)
-			.items_(["chord..."] ++ this.chordNames.collect(_.asString))
-			.action_({ |v|
-				var i = (v.value ? 0) - 1;
-				if (i >= 0) { panel.unit !? { |u| u.chord = this.chordNames[i] } };
-				v.value = 0;
-			});
-		^[menu]
+	// the chord the six strings are tuned to now, by name, or nil when they make none of them
+	chord {
+		var notes = this.class.voices.collect { |i| values[this.class.note(i)] };
+		^this.class.chordNames.detect { |name| this.class.chords[name] == notes }
 	}
 
 	*process { |sig, p, ctx|
-		var n = sig.size, x, wet;
+		var n = sig.size, x, strings, wet, scale;
 		var nyquist = SampleRate.ir * 0.45;
 		x = HPF.ar(LPF.ar(sig * p[\input].dbamp, p[\hiCut]), p[\loCut]);
-		wet = n.collect { |c|
+		// per side, the six strings apart (the display hears each)
+		strings = n.collect { |c|
 			// the left goes flat and the right sharp, by half the detune each
 			var cents = p[\detune] * (((c % 2) * 2 - 1) * 0.5) / 100;
 			voices.collect { |v|
@@ -149,11 +193,16 @@ Sympathy : FxParamUnit {
 					var amp = p[this.level(v)] * (0.5 + (0.5 * p[\bright])) / k * BinaryOpUGen('<', fk, nyquist);
 					Ringz.ar(x[c], fk.min(nyquist), ring, amp)
 				}.sum
-			}.sum
+			}
 		};
-		ctx[\extras] = [];
 		// Ringz's gain at its note grows with its decay, and it is a long way up
-		wet = (wet * 0.015 / p[\decay].sqrt).tanh;
+		scale = 0.015 / p[\decay].sqrt;
+		wet = strings.collect { |s| s.sum } * 0.015 / p[\decay].sqrt;
+		// for the display only: how much each string rings, and the strings before the soft limit
+		ctx[\extras] = voices.collect { |v|
+			strings.collect { |s| Amplitude.kr(s[v], 0.01, 0.1) }.reduce(\max) * scale
+		} ++ [wet.collect { |w| Amplitude.kr(w, 0.01, 0.1) }.reduce(\max)];
+		wet = wet.tanh;
 		^FxKit.width(LeakDC.ar(wet), p[\width])
 	}
 }
