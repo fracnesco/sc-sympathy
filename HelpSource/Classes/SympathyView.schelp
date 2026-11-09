@@ -1,12 +1,31 @@
 TITLE:: SympathyView
-summary:: Sympathy's display
+summary:: Sympathy's display: the strings on a keyboard, and how they ring out
 categories:: Libraries>Sympathy
-related:: Classes/Sympathy, Classes/FxParamView, Classes/FxParamPanel
+related:: Classes/Sympathy, Classes/SympathyPanel, Classes/FxParamView, Classes/FxDevicePanel
 
 DESCRIPTION::
-What link::Classes/FxParamPanel:: puts at the top of Sympathy's window. In it, drag a voice along the keyboard for its note, up and down for its level (shift for quarter tones and finer); the wheel moves the root and everything with it.
+What link::Classes/SympathyPanel:: puts at the top of Sympathy's window, beside the in and out meters. Two parts, each with its title.
 
-It draws from the object's settings and the replies its meters bring, so it is only live while the window is running; link::Classes/FxParamView:: has the rest.
+strong::strings:: - pitch along, a keyboard at the bottom from c2 to c9 (Tidal's names: c5 is note 0), the root marked under it. Each voice is a string standing on its key, as tall as its level, numbered as in the string card; a voice at 0 is a hollow circle at the bottom, one off the keys an arrow at the edge. The thin lines further up are its harmonics, pulled sharp by code::inharm::. Behind them, in blue, the output's spectrum on the same keys. While it runs, a string that rings swells and shakes, as wide as it is loud: the server's own reading of each voice.
+
+strong::ring:: - a hit falling away: dB down, seconds along, a line per harmonic, the lowest thick. code::decay:: is where the lowest reaches -60 dB, code::bright:: how much sooner the high ones get there. Behind them, in blue, what the strings did since the last hit (the input jumping up starts a new trace). When the strings build up past what the soft limit lets through, the corner says by how much it holds them down.
+
+table::
+## strong::in the display:: || strong::does::
+## click a string || picks it: the string card shows that voice
+## drag a string along || its note, a key at a time; shift for tenths
+## drag a string up and down || its level (the first move says which)
+## double click a string || back to full level
+## click a key || the picked string to that note
+## drag the root mark, or the wheel over the strings || the root, every string with it; double click the mark: back to the default
+## drag the ring's filled handle || code::decay::
+## drag the ring's hollow handle (the 6th's end) || code::bright::
+## drag elsewhere in the ring || along: code::decay::; up and down: code::bright::; shift for fine
+## the wheel over the ring || code::inharm::
+## double click the ring || code::decay:: and code::bright:: back to their defaults
+::
+
+Hovering over a string, the root mark or a handle lights the knobs it moves. It draws from the object's settings and the replies its meters bring, so it is only live while the window is running; link::Classes/FxParamView:: has the rest.
 
 CLASSMETHODS::
 
@@ -16,7 +35,46 @@ The link::Classes/Sympathy::.
 ARGUMENT:: parent
 A view to go in.
 
+METHOD:: lowNote
+The bottom of the keyboard, in midi (24, c2).
+
+METHOD:: highNote
+The top of the keyboard, in midi (108, c9).
+
+METHOD:: ringTime
+How long harmonic code::h:: (0 is the lowest) rings to -60 dB, as the DSP has it.
+ARGUMENT:: h
+ARGUMENT:: decay
+ARGUMENT:: bright
+
 INSTANCEMETHODS::
+
+METHOD:: focus
+Which voice is picked, from 0: the panel sets it from the string card's selector, and clicking a string sets the card through code::focusAction::.
+
+METHOD:: focusAction
+A function called with the voice's index when a string is clicked.
+
+METHOD:: panel
+The panel it sits in, whose knobs it lights while the pointer is over what they move.
+
+METHOD:: limitDb
+What the soft limit takes off now, in dB (0 when it does not act, or when nothing is heard).
 
 METHOD:: hint
 What the hint bar says over it.
+ARGUMENT:: x
+ARGUMENT:: y
+The pointer, in the view.
+
+METHOD:: levelsArrived
+Called on every meter reply: records the strings' level since the last hit.
+
+METHOD:: sweep
+The readings the ring part draws now, code::[seconds since the hit, dB]::.
+
+METHOD:: sweepTop
+Their loudest, in dB.
+
+METHOD:: dragging
+What a drag going on moves (a voice's index, code::\root::, code::\keys::, code::\decay::, code::\bright::, code::\ring::), or nil.

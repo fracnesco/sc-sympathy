@@ -1,0 +1,31 @@
+TITLE:: SympathyPanel
+summary:: Sympathy's window below the header: the device frame, with a chord menu that knows the chord
+categories:: Libraries>Sympathy
+related:: Classes/Sympathy, Classes/SympathyView, Classes/FxDevicePanel, Classes/FxDeviceGUI
+
+DESCRIPTION::
+link::Classes/FxDevicePanel::, as every effect of the family has it, with two things more: the chord menu in the tuning card says which of code::Sympathy.chordNames:: the six voices make now (or "own"), and the display (a link::Classes/SympathyView::) is told the panel, so the knobs of whatever is under the pointer light up.
+
+code::Sympathy.panelClass:: answers it, so code::gui:: and code::panel:: build it, and so does anything that shows an FxParamUnit by its panel class.
+
+code::
+y = Sympathy.new;
+w = Window("sympathy", Rect(100, 100, 1000, 560)).front;
+p = y.panel(w.view);
+w.view.layout = VLayout(p.view);
+p.page = 1;     // character
+p.focus = 2;    // the string card shows the third voice
+::
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: unit
+The link::Classes/Sympathy::.
+ARGUMENT:: parent
+A view to go in.
+
+INSTANCEMETHODS::
+
+METHOD:: chordChoice
+The chord menu (an code::FxChoice::).

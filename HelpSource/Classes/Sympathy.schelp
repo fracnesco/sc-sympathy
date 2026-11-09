@@ -1,7 +1,7 @@
 TITLE:: Sympathy
 summary:: a bank of six tuned resonators that ring in a chord when the sound touches them, as a UGen and as an object, with a window
 categories:: Libraries>Sympathy
-related:: Classes/FxParamUnit, Classes/SympathyView, Classes/FxUnit, Classes/FxChain
+related:: Classes/FxParamUnit, Classes/SympathyView, Classes/SympathyPanel, Classes/FxUnit, Classes/FxChain
 
 DESCRIPTION::
 Six tuned voices that ring when the sound touches them - hold a piano's pedal down and shout into it - running anywhere a UGen does, with a window.
@@ -19,37 +19,37 @@ y.preset = 'gamelan';
 
 Each voice is six resonators tuned to the harmonics of a note: code::inharm:: stretches them as a stiff string's are, and the high ones ring for less time as code::bright:: comes down. What comes in sets them going, and they answer in the chord.
 
-A voice is a distance from code::root:: in semitones, code::note1..6::, and a level, code::level1..6::, which has no knob: drag it on the keyboard, or use code::tune::. code::chord:: sets all six at once, from the names in code::Sympathy.chordNames::, and is a command rather than a setting, so a preset holds the notes it made.
+A voice is a distance from code::root:: in semitones, code::note1..6::, and a level, code::level1..6:: (0 is off; in the window, the string card and the display). code::chord:: sets all six at once, from the names in code::Sympathy.chordNames::, and is a command rather than a setting, so a preset holds the notes it made.
 
 Their level follows the input, so a long decay on a steady input gets loud, and they are limited softly on the way out. Measured on one hit of noise, code::decay:: is the time to about 60 dB down.
 
 It is 72 code::Ringz:: at stereo, and about 3% of one core on an M4 Pro.
 
 subsection:: The object and the UGen
-It is an link::Classes/FxParamUnit::, so everything that class documents works here: code::Sympathy.ar(in, name)::, code::Sympathy(node, name)::, code::Sympathy.onBus(bus, numChannels)::, presets, the clipboard, code::gui::. Its window's display is a link::Classes/SympathyView::.
+It is an link::Classes/FxParamUnit::, so everything that class documents works here: code::Sympathy.ar(in, name)::, code::Sympathy(node, name)::, code::Sympathy.onBus(bus, numChannels)::, presets, the clipboard, code::gui::. Its window is a link::Classes/SympathyPanel:: (the device frame of link::Classes/FxDevicePanel::, with the chord menu showing the chord the strings make) and its display a link::Classes/SympathyView::. Each string's level and the strings' level before the soft limit come back with the meters, for the display: that costs seven code::Amplitude:: followers and nothing in the sound.
 
 subsection:: Parameters
-Each is a property of the object: read it, set it. The numbers are in the order of the node's control, which is what saved node maps carry. Internal ones without a knob, if any, are described above.
+Each is a property of the object: read it, set it. The numbers are in the order of the node's control, which is what saved node maps carry. code::level1..6:: (0 .. 1, default 1, each right after its code::note::) are the voices' levels, described above.
 
 table::
 ## strong::parameter:: || strong::range:: || strong::default:: || strong::what it does::
-## code::root:: || 24 .. 84 midi || 48 || the note everything is counted from
-## code::note1:: || -24 .. 36 st || 0 || voice 1, in semitones from the root
-## code::note2:: || -24 .. 36 st || 7 || voice 2, in semitones from the root
-## code::note3:: || -24 .. 36 st || 12 || voice 3, in semitones from the root
-## code::note4:: || -24 .. 36 st || 19 || voice 4, in semitones from the root
-## code::note5:: || -24 .. 36 st || 24 || voice 5, in semitones from the root
-## code::note6:: || -24 .. 36 st || 31 || voice 6, in semitones from the root
-## code::glide:: || 0 .. 1 s || 0.05 || how long a voice takes to reach a new note
-## code::decay:: || 0.05 .. 30 s || 3 || how long the lowest harmonic rings
-## code::bright:: || 0 .. 1 || 0.5 || how long the high harmonics ring, against the low ones
-## code::inharm:: || 0 .. 0.02 || 0 || the harmonics stretched sharp, as on a stiff string
+## code::root:: || 24 .. 84 midi || 48 || the note every string is counted from - type a name (e3) or a number
+## code::note1:: || -24 .. 36 st || 0 || string 1, in semitones from the root
+## code::note2:: || -24 .. 36 st || 7 || string 2, in semitones from the root
+## code::note3:: || -24 .. 36 st || 12 || string 3, in semitones from the root
+## code::note4:: || -24 .. 36 st || 19 || string 4, in semitones from the root
+## code::note5:: || -24 .. 36 st || 24 || string 5, in semitones from the root
+## code::note6:: || -24 .. 36 st || 31 || string 6, in semitones from the root
+## code::glide:: || 0 .. 1 s || 0.05 || how long a string takes to reach a new note
+## code::decay:: || 0.05 .. 30 s || 3 || how long the lowest harmonic rings, to -60 dB
+## code::bright:: || 0 .. 1 || 0.5 || how long the high harmonics ring against the low ones: dark, they die first
+## code::inharm:: || 0 .. 0.02 || 0 || the harmonics stretched sharp, as on a stiff string: at 1 % the 6th is nearly a minor third sharp
 ## code::detune:: || 0 .. 50 c || 4 || the sides apart, in cents: slow beating
-## code::vibrato:: || 0 .. 1 || 0 || how far each voice wanders, at most a semitone
-## code::vibratoRate:: || 0.05 .. 12 Hz || 3 || how quickly
-## code::hiCut:: || 200 .. 20000 Hz || 12000 || a low pass on what goes in
-## code::loCut:: || 20 .. 2000 Hz || 40 || a high pass on what goes in
-## code::input:: || -24 .. 24 dB || 0 || how hard it is played
+## code::vibrato:: || 0 .. 1 || 0 || how far each string drifts off its note, slowly and at random: at most a semitone
+## code::vibratoRate:: || 0.05 .. 12 Hz || 3 || how quickly the strings wander
+## code::hiCut:: || 200 .. 20000 Hz || 12000 || a low pass on what goes in: what is above it does not reach the strings
+## code::loCut:: || 20 .. 2000 Hz || 40 || a high pass on what goes in: what is below it does not reach the strings
+## code::input:: || -24 .. 24 dB || 0 || how hard the strings are played
 ## code::width:: || 0 .. 2 || 1 || how far apart the sides are
 ## code::mix:: || 0 .. 1 || 0.6 || how much of the effect goes out, against the dry signal
 ## code::output:: || -36 .. 24 dB || 0 || the level of the whole thing, in dB
@@ -66,7 +66,7 @@ the chords, as semitones from the root.
 INSTANCEMETHODS::
 
 METHOD:: chord
-six voices at once, by name: a setter only.
+Set: six voices at once, by name, each at full level. Get: the chord the voices make now, by name, or nil when they make none of code::Sympathy.chordNames:: (levels aside).
 
 METHOD:: tune
 one voice, from 0, either or both.
