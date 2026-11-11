@@ -2,6 +2,8 @@
 
 **Six tuned voices that ring when the sound touches them - hold a piano's pedal down and shout into it - running anywhere a UGen does, with a window.** A SuperCollider extension.
 
+![Sympathy's window](images/sympathy.png)
+
 ```supercollider
 s.boot;
 Ndef(\drums, { Sympathy.ar(Decay2.ar(Impulse.ar(2), 0.002, 0.05) * PinkNoise.ar(0.6 ! 2), \sympathy) }).play;
@@ -130,6 +132,7 @@ Every parameter is a property: `y.root`, `y.root = ...`. These also work by name
 | [examples/sympathy-demo.scd](examples/sympathy-demo.scd) | a walkthrough, one block at a time |
 | [install.scd](install.scd) | the symlink, a check, an uninstall |
 | [sc-sympathy.quark](sc-sympathy.quark) | the quark manifest |
+| [images/](images/) | the screenshots in this README |
 
 ## License
 
